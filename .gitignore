@@ -30,4 +30,7 @@ projects/
 pip-wheel-metadata/
 *.egg-info/
 
+# Local database / embeddings cache
+db/
+
 auto-generated-files/
