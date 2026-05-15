@@ -46,6 +46,28 @@ from config.settings import (
 )
 
 
+def _normalize_openrouter_model(model_name: str) -> str:
+    model_name = model_name.strip()
+    if not model_name:
+        return model_name
+
+    known_prefixes = (
+        "openrouter/",
+        "openai/",
+        "anthropic/",
+        "google/",
+        "azure/",
+        "huggingface/",
+        "gpt4all/",
+        "llama/",
+    )
+
+    if model_name.startswith(known_prefixes):
+        return model_name
+
+    return f"openrouter/{model_name}"
+
+
 def get_cloud_llm(openrouter_model: str, openai_model: str) -> ChatOpenAI:
     """
     Base cloud LLM factory.
@@ -54,7 +76,7 @@ def get_cloud_llm(openrouter_model: str, openai_model: str) -> ChatOpenAI:
     """
     if USE_OPENROUTER_CLOUD and OPENROUTER_API_KEY:
         return ChatOpenAI(
-            model=openrouter_model,
+            model=_normalize_openrouter_model(openrouter_model),
             api_key=OPENROUTER_API_KEY,
             base_url=OPENROUTER_BASE_URL,
             temperature=0.2,
@@ -69,7 +91,7 @@ def get_cloud_llm(openrouter_model: str, openai_model: str) -> ChatOpenAI:
 
     if OPENROUTER_API_KEY:
         return ChatOpenAI(
-            model=openrouter_model,
+            model=_normalize_openrouter_model(openrouter_model),
             api_key=OPENROUTER_API_KEY,
             base_url=OPENROUTER_BASE_URL,
             temperature=0.2,
@@ -103,7 +125,7 @@ def get_local_llm(ollama_model: str, openrouter_model: str) -> ChatOpenAI | Chat
     """
     if USE_OPENROUTER_LOCAL and OPENROUTER_API_KEY:
         return ChatOpenAI(
-            model=openrouter_model,
+            model=_normalize_openrouter_model(openrouter_model),
             api_key=OPENROUTER_API_KEY,
             base_url=OPENROUTER_BASE_URL,
             temperature=0.3,
@@ -118,7 +140,7 @@ def get_local_llm(ollama_model: str, openrouter_model: str) -> ChatOpenAI | Chat
 
     if OPENROUTER_API_KEY:
         return ChatOpenAI(
-            model=openrouter_model,
+            model=_normalize_openrouter_model(openrouter_model),
             api_key=OPENROUTER_API_KEY,
             base_url=OPENROUTER_BASE_URL,
             temperature=0.3,
