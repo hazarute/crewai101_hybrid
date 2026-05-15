@@ -73,6 +73,12 @@ DEEPSEEK_API_KEY: str       = os.getenv("DEEPSEEK_API_KEY", "").strip()
 DEEPSEEK_ENABLED: bool      = bool(DEEPSEEK_API_KEY)
 DEEPSEEK_BASE_URL: str      = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
 
+# When Deepseek is enabled but OpenAI is not configured, use Deepseek as a
+# drop-in OpenAI-compatible backend for libraries that require OPENAI env vars.
+if DEEPSEEK_ENABLED and not OPENAI_ENABLED:
+    os.environ["OPENAI_API_KEY"] = DEEPSEEK_API_KEY
+    os.environ["OPENAI_API_BASE"] = DEEPSEEK_BASE_URL
+
 # Set to "true" to route the Cloud Orchestrator through Deepseek when available
 USE_DEEPSEEK_CLOUD: bool    = os.getenv("USE_DEEPSEEK_CLOUD", "false").lower() == "true" and DEEPSEEK_ENABLED
 DEEPSEEK_CLOUD_MODEL: str   = os.getenv("DEEPSEEK_CLOUD_MODEL", "deepseek-chat")

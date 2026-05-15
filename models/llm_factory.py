@@ -118,7 +118,7 @@ def get_cloud_llm(openrouter_model: str, openai_model: str, deepseek_model: str)
 
     if USE_DEEPSEEK_CLOUD and DEEPSEEK_API_KEY:
         return ChatOpenAI(
-            model=deepseek_model,
+            model=_normalize_openai_model(deepseek_model),
             api_key=DEEPSEEK_API_KEY,
             base_url=DEEPSEEK_BASE_URL,
             temperature=0.2,
@@ -183,7 +183,7 @@ def get_local_llm(ollama_model: str, openrouter_model: str, deepseek_model: str)
 
     if USE_DEEPSEEK_LOCAL and DEEPSEEK_API_KEY:
         return ChatOpenAI(
-            model=deepseek_model,
+            model=_normalize_openai_model(deepseek_model),
             api_key=DEEPSEEK_API_KEY,
             base_url=DEEPSEEK_BASE_URL,
             temperature=0.3,
