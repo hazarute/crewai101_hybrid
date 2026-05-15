@@ -22,6 +22,7 @@ from langchain_community.chat_models import ChatOllama
 
 from config.settings import (
     OPENAI_API_KEY,
+    OPENAI_API_BASE,
     CLOUD_MODEL_ARCHITECT,
     CLOUD_MODEL_REVIEWER,
     CLOUD_MODEL_LEADER,
@@ -43,6 +44,18 @@ from config.settings import (
     OPENROUTER_LOCAL_MODEL_TESTER,
     OPENROUTER_LOCAL_MODEL_REVIEWER,
     OPENROUTER_LOCAL_MODEL_DEVOPS,
+    DEEPSEEK_API_KEY,
+    DEEPSEEK_BASE_URL,
+    USE_DEEPSEEK_CLOUD,
+    DEEPSEEK_CLOUD_MODEL_ARCHITECT,
+    DEEPSEEK_CLOUD_MODEL_REVIEWER,
+    DEEPSEEK_CLOUD_MODEL_LEADER,
+    USE_DEEPSEEK_LOCAL,
+    DEEPSEEK_LOCAL_MODEL_BACKEND,
+    DEEPSEEK_LOCAL_MODEL_FRONTEND,
+    DEEPSEEK_LOCAL_MODEL_TESTER,
+    DEEPSEEK_LOCAL_MODEL_REVIEWER,
+    DEEPSEEK_LOCAL_MODEL_DEVOPS,
 )
 
 
@@ -68,11 +81,32 @@ def _normalize_openrouter_model(model_name: str) -> str:
     return f"openrouter/{model_name}"
 
 
-def get_cloud_llm(openrouter_model: str, openai_model: str) -> ChatOpenAI:
+def _normalize_openai_model(model_name: str) -> str:
+    name = model_name.strip()
+    if not name:
+        return name
+
+    known_prefixes = (
+        "openai/",
+        "openrouter/",
+        "anthropic/",
+        "google/",
+        "azure/",
+        "huggingface/",
+        "gpt4all/",
+        "llama/",
+    )
+
+    if name.startswith(known_prefixes):
+        return name
+    return f"openai/{name}"
+
+
+def get_cloud_llm(openrouter_model: str, openai_model: str, deepseek_model: str) -> ChatOpenAI:
     """
     Base cloud LLM factory.
-    Priority: OpenRouter (if explicitly enabled) → OpenAI direct → OpenRouter fallback.
-    `openrouter_model` and `openai_model` are the per-agent model names.
+    Priority: OpenRouter → Deepseek → OpenAI → OpenRouter fallback → Deepseek fallback.
+    Each provider is only used when explicitly enabled via its USE_* flag or as last resort.
     """
     if USE_OPENROUTER_CLOUD and OPENROUTER_API_KEY:
         return ChatOpenAI(
@@ -82,10 +116,19 @@ def get_cloud_llm(openrouter_model: str, openai_model: str) -> ChatOpenAI:
             temperature=0.2,
         )
 
+    if USE_DEEPSEEK_CLOUD and DEEPSEEK_API_KEY:
+        return ChatOpenAI(
+            model=deepseek_model,
+            api_key=DEEPSEEK_API_KEY,
+            base_url=DEEPSEEK_BASE_URL,
+            temperature=0.2,
+        )
+
     if OPENAI_API_KEY:
         return ChatOpenAI(
-            model=openai_model,
+            model=_normalize_openai_model(openai_model),
             api_key=OPENAI_API_KEY,
+            base_url=OPENAI_API_BASE or None,
             temperature=0.2,
         )
 
@@ -97,37 +140,52 @@ def get_cloud_llm(openrouter_model: str, openai_model: str) -> ChatOpenAI:
             temperature=0.2,
         )
 
+    if DEEPSEEK_API_KEY:
+        return ChatOpenAI(
+            model=deepseek_model,
+            api_key=DEEPSEEK_API_KEY,
+            base_url=DEEPSEEK_BASE_URL,
+            temperature=0.2,
+        )
+
     raise RuntimeError(
-        "No cloud LLM configured. Set OPENAI_API_KEY or OPENROUTER_API_KEY in .env."
+        "No cloud LLM configured. Set OPENAI_API_KEY, DEEPSEEK_API_KEY, or OPENROUTER_API_KEY in .env."
     )
 
 
 def get_architect_llm() -> ChatOpenAI:
     """Cloud LLM for project_architect (system design & scaffolding)."""
-    return get_cloud_llm(OPENROUTER_CLOUD_MODEL_ARCHITECT, CLOUD_MODEL_ARCHITECT)
+    return get_cloud_llm(OPENROUTER_CLOUD_MODEL_ARCHITECT, CLOUD_MODEL_ARCHITECT, DEEPSEEK_CLOUD_MODEL_ARCHITECT)
 
 
 def get_code_review_llm() -> ChatOpenAI:
     """Cloud LLM for code_reviewer (OWASP analysis + review gate)."""
-    return get_cloud_llm(OPENROUTER_CLOUD_MODEL_REVIEWER, CLOUD_MODEL_REVIEWER)
+    return get_cloud_llm(OPENROUTER_CLOUD_MODEL_REVIEWER, CLOUD_MODEL_REVIEWER, DEEPSEEK_CLOUD_MODEL_REVIEWER)
 
 
 def get_leader_llm() -> ChatOpenAI:
     """Cloud LLM for team_leader (VERDICT quality gates + final approval)."""
-    return get_cloud_llm(OPENROUTER_CLOUD_MODEL_LEADER, CLOUD_MODEL_LEADER)
+    return get_cloud_llm(OPENROUTER_CLOUD_MODEL_LEADER, CLOUD_MODEL_LEADER, DEEPSEEK_CLOUD_MODEL_LEADER)
 
 
-def get_local_llm(ollama_model: str, openrouter_model: str) -> ChatOpenAI | ChatOllama:
+def get_local_llm(ollama_model: str, openrouter_model: str, deepseek_model: str) -> ChatOpenAI | ChatOllama:
     """
     Returns the LLM used by a worker agent.
-    Priority: OpenRouter (if explicitly enabled) → Ollama local → OpenRouter fallback.
-    `ollama_model` is used when Ollama is active; `openrouter_model` when OpenRouter is.
+    Priority: OpenRouter → Deepseek → Ollama → OpenRouter fallback → Deepseek fallback.
     """
     if USE_OPENROUTER_LOCAL and OPENROUTER_API_KEY:
         return ChatOpenAI(
             model=_normalize_openrouter_model(openrouter_model),
             api_key=OPENROUTER_API_KEY,
             base_url=OPENROUTER_BASE_URL,
+            temperature=0.3,
+        )
+
+    if USE_DEEPSEEK_LOCAL and DEEPSEEK_API_KEY:
+        return ChatOpenAI(
+            model=deepseek_model,
+            api_key=DEEPSEEK_API_KEY,
+            base_url=DEEPSEEK_BASE_URL,
             temperature=0.3,
         )
 
@@ -146,28 +204,44 @@ def get_local_llm(ollama_model: str, openrouter_model: str) -> ChatOpenAI | Chat
             temperature=0.3,
         )
 
+    if DEEPSEEK_API_KEY:
+        return ChatOpenAI(
+            model=deepseek_model,
+            api_key=DEEPSEEK_API_KEY,
+            base_url=DEEPSEEK_BASE_URL,
+            temperature=0.3,
+        )
+
     raise RuntimeError(
-        "No worker LLM configured. Set OLLAMA_BASE_URL or OPENROUTER_API_KEY in .env."
+        "No worker LLM configured. Set OLLAMA_BASE_URL, DEEPSEEK_API_KEY, or OPENROUTER_API_KEY in .env."
     )
 
 
 def get_cloud_provider_name() -> str:
     if USE_OPENROUTER_CLOUD and OPENROUTER_API_KEY:
         return "OpenRouter"
+    if USE_DEEPSEEK_CLOUD and DEEPSEEK_API_KEY:
+        return "Deepseek"
     if OPENAI_API_KEY:
         return "OpenAI"
     if OPENROUTER_API_KEY:
         return "OpenRouter"
+    if DEEPSEEK_API_KEY:
+        return "Deepseek"
     return "None"
 
 
 def get_worker_provider_name() -> str:
     if USE_OPENROUTER_LOCAL and OPENROUTER_API_KEY:
         return "OpenRouter"
+    if USE_DEEPSEEK_LOCAL and DEEPSEEK_API_KEY:
+        return "Deepseek"
     if OLLAMA_BASE_URL:
         return "Ollama (local)"
     if OPENROUTER_API_KEY:
         return "OpenRouter"
+    if DEEPSEEK_API_KEY:
+        return "Deepseek"
     return "None"
 
 
@@ -178,11 +252,11 @@ code_review_llm = get_code_review_llm()  # code_reviewer
 leader_llm      = get_leader_llm()       # team_leader
 
 # Local worker agents
-backend_llm  = get_local_llm(OLLAMA_MODEL_BACKEND,  OPENROUTER_LOCAL_MODEL_BACKEND)
-frontend_llm = get_local_llm(OLLAMA_MODEL_FRONTEND, OPENROUTER_LOCAL_MODEL_FRONTEND)
-tester_llm   = get_local_llm(OLLAMA_MODEL_TESTER,   OPENROUTER_LOCAL_MODEL_TESTER)
-reviewer_llm = get_local_llm(OLLAMA_MODEL_REVIEWER, OPENROUTER_LOCAL_MODEL_REVIEWER)  # tech_writer
-devops_llm   = get_local_llm(OLLAMA_MODEL_DEVOPS,   OPENROUTER_LOCAL_MODEL_DEVOPS)
+backend_llm  = get_local_llm(OLLAMA_MODEL_BACKEND,  OPENROUTER_LOCAL_MODEL_BACKEND,  DEEPSEEK_LOCAL_MODEL_BACKEND)
+frontend_llm = get_local_llm(OLLAMA_MODEL_FRONTEND, OPENROUTER_LOCAL_MODEL_FRONTEND, DEEPSEEK_LOCAL_MODEL_FRONTEND)
+tester_llm   = get_local_llm(OLLAMA_MODEL_TESTER,   OPENROUTER_LOCAL_MODEL_TESTER,   DEEPSEEK_LOCAL_MODEL_TESTER)
+reviewer_llm = get_local_llm(OLLAMA_MODEL_REVIEWER, OPENROUTER_LOCAL_MODEL_REVIEWER, DEEPSEEK_LOCAL_MODEL_REVIEWER)  # tech_writer
+devops_llm   = get_local_llm(OLLAMA_MODEL_DEVOPS,   OPENROUTER_LOCAL_MODEL_DEVOPS,   DEEPSEEK_LOCAL_MODEL_DEVOPS)
 
 CLOUD_PROVIDER_NAME = get_cloud_provider_name()
 WORKER_PROVIDER_NAME = get_worker_provider_name()

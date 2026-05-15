@@ -13,6 +13,7 @@ load_dotenv()
 
 # ── Cloud LLM (Team Leader / Orchestrator) ───────────────────────────────────
 OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "").strip()
+OPENAI_API_BASE: str = os.getenv("OPENAI_API_BASE", "").strip()
 OPENAI_ENABLED: bool = bool(OPENAI_API_KEY)
 CLOUD_MODEL_NAME: str = os.getenv("OPENAI_MODEL_NAME", "gpt-4o")
 
@@ -64,6 +65,33 @@ OPENROUTER_LOCAL_MODEL_FRONTEND: str = os.getenv("OPENROUTER_LOCAL_MODEL_FRONTEN
 OPENROUTER_LOCAL_MODEL_TESTER:   str = os.getenv("OPENROUTER_LOCAL_MODEL_TESTER",   OPENROUTER_LOCAL_MODEL)
 OPENROUTER_LOCAL_MODEL_REVIEWER: str = os.getenv("OPENROUTER_LOCAL_MODEL_REVIEWER", OPENROUTER_LOCAL_MODEL)  # tech_writer
 OPENROUTER_LOCAL_MODEL_DEVOPS:   str = os.getenv("OPENROUTER_LOCAL_MODEL_DEVOPS",   OPENROUTER_LOCAL_MODEL)
+
+# ── Deepseek (optional — OpenAI-uyumlu, ücretli/ücretsiz planlar) ─────────────
+# Deepseek, OpenAI API'siyle tam uyumludur; OPENAI_API_KEY'den bağımsız kendi
+# anahtarıyla yapılandırılabilir.  https://platform.deepseek.com/api_keys
+DEEPSEEK_API_KEY: str       = os.getenv("DEEPSEEK_API_KEY", "").strip()
+DEEPSEEK_ENABLED: bool      = bool(DEEPSEEK_API_KEY)
+DEEPSEEK_BASE_URL: str      = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
+
+# Set to "true" to route the Cloud Orchestrator through Deepseek when available
+USE_DEEPSEEK_CLOUD: bool    = os.getenv("USE_DEEPSEEK_CLOUD", "false").lower() == "true" and DEEPSEEK_ENABLED
+DEEPSEEK_CLOUD_MODEL: str   = os.getenv("DEEPSEEK_CLOUD_MODEL", "deepseek-chat")
+
+# Per-agent cloud model overrides — each defaults to DEEPSEEK_CLOUD_MODEL.
+DEEPSEEK_CLOUD_MODEL_ARCHITECT: str = os.getenv("DEEPSEEK_CLOUD_MODEL_ARCHITECT", DEEPSEEK_CLOUD_MODEL)
+DEEPSEEK_CLOUD_MODEL_REVIEWER:  str = os.getenv("DEEPSEEK_CLOUD_MODEL_REVIEWER",  DEEPSEEK_CLOUD_MODEL)
+DEEPSEEK_CLOUD_MODEL_LEADER:    str = os.getenv("DEEPSEEK_CLOUD_MODEL_LEADER",    DEEPSEEK_CLOUD_MODEL)
+
+# Set to "true" to route all Worker agents through Deepseek when available
+USE_DEEPSEEK_LOCAL: bool    = os.getenv("USE_DEEPSEEK_LOCAL", "false").lower() == "true" and DEEPSEEK_ENABLED
+DEEPSEEK_LOCAL_MODEL: str   = os.getenv("DEEPSEEK_LOCAL_MODEL", "deepseek-chat")
+
+# Per-agent local model overrides — each defaults to DEEPSEEK_LOCAL_MODEL.
+DEEPSEEK_LOCAL_MODEL_BACKEND:  str = os.getenv("DEEPSEEK_LOCAL_MODEL_BACKEND",  DEEPSEEK_LOCAL_MODEL)
+DEEPSEEK_LOCAL_MODEL_FRONTEND: str = os.getenv("DEEPSEEK_LOCAL_MODEL_FRONTEND", DEEPSEEK_LOCAL_MODEL)
+DEEPSEEK_LOCAL_MODEL_TESTER:   str = os.getenv("DEEPSEEK_LOCAL_MODEL_TESTER",   DEEPSEEK_LOCAL_MODEL)
+DEEPSEEK_LOCAL_MODEL_REVIEWER: str = os.getenv("DEEPSEEK_LOCAL_MODEL_REVIEWER", DEEPSEEK_LOCAL_MODEL)  # tech_writer
+DEEPSEEK_LOCAL_MODEL_DEVOPS:   str = os.getenv("DEEPSEEK_LOCAL_MODEL_DEVOPS",   DEEPSEEK_LOCAL_MODEL)
 
 # ── Runtime feature request (can be overridden via env) ──────────────────────
 # Priority: FEATURE_REQUEST_FILE (path to a .md / .txt file) >
