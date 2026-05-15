@@ -7,8 +7,7 @@ Writes every file to disk using FileWriterTool.
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool
-
+from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
 from models.llm_factory import devops_llm
 
 
@@ -36,7 +35,7 @@ devops_agent = Agent(
         "Do NOT describe configs in your Final Answer — write them using the tool."
     ),
     llm=devops_llm,
-    tools=[FileWriterTool(), FileReadTool()],
+    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
     allow_delegation=False,
     verbose=True,
 )

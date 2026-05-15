@@ -7,8 +7,7 @@ scaffolding files to disk so every downstream agent has a clear contract.
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool
-
+from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
 from models.llm_factory import architect_llm
 
 
@@ -34,7 +33,7 @@ project_architect = Agent(
         "Your Final Answer MUST start with exactly one line: PROJECT_SLUG: <slug>"
     ),
     llm=architect_llm,
-    tools=[FileWriterTool(), FileReadTool()],
+    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
     allow_delegation=False,
     verbose=True,
 )

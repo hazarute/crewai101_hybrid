@@ -7,7 +7,7 @@ Runs on a local Mistral model via Ollama.
 """
 
 from crewai import Agent
-from crewai_tools import FileReadTool, FileWriterTool, DirectorySearchTool
+from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
 from models.llm_factory import code_review_llm
 
 
@@ -28,7 +28,7 @@ code_reviewer = Agent(
         "REJECTED — and a REJECTED verdict must list every unresolved issue."
     ),
     llm=code_review_llm,
-    tools=[FileReadTool(), FileWriterTool(), DirectorySearchTool()],
+    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
     allow_delegation=False,
     verbose=True,
 )

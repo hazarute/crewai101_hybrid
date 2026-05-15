@@ -6,8 +6,7 @@ developer can onboard and run the project in under 10 minutes.
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool
-
+from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
 from models.llm_factory import reviewer_llm
 
 
@@ -34,7 +33,7 @@ tech_writer = Agent(
         "Your Final Answer is a concise summary of what was documented."
     ),
     llm=reviewer_llm,
-    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool()],
+    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
     allow_delegation=False,
     verbose=True,
 )

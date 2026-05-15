@@ -6,8 +6,7 @@ covering happy paths, error branches, and edge cases for every module.
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool
-
+from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
 from models.llm_factory import tester_llm
 
 
@@ -34,7 +33,7 @@ test_engineer = Agent(
         "and frontend tests to projects/<slug>/frontend/__tests__/."
     ),
     llm=tester_llm,
-    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool()],
+    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
     allow_delegation=False,
     verbose=True,
 )
