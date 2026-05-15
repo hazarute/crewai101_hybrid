@@ -28,6 +28,7 @@ build_crew() in hybrid_crew.py remains available for simple / debug runs.
 
 from crewai import Crew, Process
 
+from config.settings import MAX_SPRINTS  # configurable via .env
 from agents import (
     project_architect,
     backend_developer,
@@ -53,8 +54,6 @@ from tasks import (
     create_documentation_task,
     create_approval_task,
 )
-
-MAX_SPRINTS = 3  # maximum rework iterations per phase before moving on
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────

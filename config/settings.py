@@ -99,6 +99,11 @@ DEEPSEEK_LOCAL_MODEL_TESTER:   str = os.getenv("DEEPSEEK_LOCAL_MODEL_TESTER",   
 DEEPSEEK_LOCAL_MODEL_REVIEWER: str = os.getenv("DEEPSEEK_LOCAL_MODEL_REVIEWER", DEEPSEEK_LOCAL_MODEL)  # tech_writer
 DEEPSEEK_LOCAL_MODEL_DEVOPS:   str = os.getenv("DEEPSEEK_LOCAL_MODEL_DEVOPS",   DEEPSEEK_LOCAL_MODEL)
 
+# ── Sprint loop configuration ────────────────────────────────────────────────
+# Maximum rework iterations per phase (Implementation & Test loops).
+# Yüksek değer = daha iyi kalite ama daha fazla token/süre.
+MAX_SPRINTS: int = int(os.getenv("MAX_SPRINTS", "3"))
+
 # ── Runtime feature request (can be overridden via env) ──────────────────────
 # Priority: FEATURE_REQUEST_FILE (path to a .md / .txt file) >
 #           FEATURE_REQUEST (inline text) > built-in default.
