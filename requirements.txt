@@ -1,0 +1,13 @@
+# Hybrid AI Software Agency — Dependencies
+# Python 3.10+
+
+# Core framework
+crewai>=0.36.0
+crewai-tools>=0.4.0
+
+# LLM providers
+langchain-openai>=0.1.0        # Cloud: GPT-4o / Claude via OpenAI-compatible API
+langchain-community>=0.2.0     # Local: Ollama (Llama 3 / Mistral)
+
+# Utilities
+python-dotenv>=1.0.0

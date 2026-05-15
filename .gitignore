@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# Environment variables
+.env
+.env.*
+
+# Editor / OS files
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# CrewAI output and generated project artifacts
+output/
+projects/
+
+# pip cache
+pip-wheel-metadata/
+*.egg-info/
+
+auto-generated-files/
