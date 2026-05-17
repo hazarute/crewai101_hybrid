@@ -15,6 +15,13 @@ models/llm_factory.py — LLM instantiation for Hybrid AI architecture.
 OpenRouter support (independent flags, can mix-and-match):
   USE_OPENROUTER_CLOUD=true  → Cloud agents use OpenRouter
   USE_OPENROUTER_LOCAL=true  → Worker agents use OpenRouter
+
+Deepseek support (deepseek-v4-flash / deepseek-v4-pro — May 2026):
+  USE_DEEPSEEK_CLOUD=true   → Cloud agents use Deepseek
+  USE_DEEPSEEK_LOCAL=true   → Worker agents use Deepseek
+  DEEPSEEK_THINKING_MODE=enabled   → Activates chain-of-thought (reasoning_content)
+  DEEPSEEK_REASONING_EFFORT=high|max → CoT depth (only when thinking mode enabled)
+  Note: deepseek-chat and deepseek-reasoner are deprecated on 2026/07/24.
 """
 
 from langchain_openai import ChatOpenAI
@@ -56,6 +63,8 @@ from config.settings import (
     DEEPSEEK_LOCAL_MODEL_TESTER,
     DEEPSEEK_LOCAL_MODEL_REVIEWER,
     DEEPSEEK_LOCAL_MODEL_DEVOPS,
+    DEEPSEEK_THINKING_MODE,
+    DEEPSEEK_REASONING_EFFORT,
 )
 
 
@@ -102,6 +111,22 @@ def _normalize_openai_model(model_name: str) -> str:
     return f"openai/{name}"
 
 
+def _deepseek_model_kwargs() -> dict:
+    """
+    Returns extra model_kwargs for DeepSeek Thinking Mode.
+    Activated when DEEPSEEK_THINKING_MODE=enabled.
+    - extra_body: {"thinking": {"type": "enabled"}} is passed to the API request body.
+    - reasoning_effort: "high" (default) or "max" controls CoT depth.
+    Note: temperature/top_p have no effect when thinking mode is active (API ignores them).
+    """
+    if DEEPSEEK_THINKING_MODE == "enabled":
+        return {
+            "extra_body": {"thinking": {"type": "enabled"}},
+            "reasoning_effort": DEEPSEEK_REASONING_EFFORT,
+        }
+    return {}
+
+
 def get_cloud_llm(openrouter_model: str, openai_model: str, deepseek_model: str) -> ChatOpenAI:
     """
     Base cloud LLM factory.
@@ -122,6 +147,7 @@ def get_cloud_llm(openrouter_model: str, openai_model: str, deepseek_model: str)
             api_key=DEEPSEEK_API_KEY,
             base_url=DEEPSEEK_BASE_URL,
             temperature=0.2,
+            model_kwargs=_deepseek_model_kwargs(),
         )
 
     if OPENAI_API_KEY:
@@ -146,6 +172,7 @@ def get_cloud_llm(openrouter_model: str, openai_model: str, deepseek_model: str)
             api_key=DEEPSEEK_API_KEY,
             base_url=DEEPSEEK_BASE_URL,
             temperature=0.2,
+            model_kwargs=_deepseek_model_kwargs(),
         )
 
     raise RuntimeError(
@@ -187,6 +214,7 @@ def get_local_llm(ollama_model: str, openrouter_model: str, deepseek_model: str)
             api_key=DEEPSEEK_API_KEY,
             base_url=DEEPSEEK_BASE_URL,
             temperature=0.3,
+            model_kwargs=_deepseek_model_kwargs(),
         )
 
     if OLLAMA_BASE_URL:
@@ -210,6 +238,7 @@ def get_local_llm(ollama_model: str, openrouter_model: str, deepseek_model: str)
             api_key=DEEPSEEK_API_KEY,
             base_url=DEEPSEEK_BASE_URL,
             temperature=0.3,
+            model_kwargs=_deepseek_model_kwargs(),
         )
 
     raise RuntimeError(

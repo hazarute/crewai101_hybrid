@@ -81,7 +81,8 @@ if DEEPSEEK_ENABLED and not OPENAI_ENABLED:
 
 # Set to "true" to route the Cloud Orchestrator through Deepseek when available
 USE_DEEPSEEK_CLOUD: bool    = os.getenv("USE_DEEPSEEK_CLOUD", "false").lower() == "true" and DEEPSEEK_ENABLED
-DEEPSEEK_CLOUD_MODEL: str   = os.getenv("DEEPSEEK_CLOUD_MODEL", "deepseek-chat")
+# deepseek-chat (deprecated 2026/07/24) → deepseek-v4-flash
+DEEPSEEK_CLOUD_MODEL: str   = os.getenv("DEEPSEEK_CLOUD_MODEL", "deepseek-v4-flash")
 
 # Per-agent cloud model overrides — each defaults to DEEPSEEK_CLOUD_MODEL.
 DEEPSEEK_CLOUD_MODEL_ARCHITECT: str = os.getenv("DEEPSEEK_CLOUD_MODEL_ARCHITECT", DEEPSEEK_CLOUD_MODEL)
@@ -90,7 +91,8 @@ DEEPSEEK_CLOUD_MODEL_LEADER:    str = os.getenv("DEEPSEEK_CLOUD_MODEL_LEADER",  
 
 # Set to "true" to route all Worker agents through Deepseek when available
 USE_DEEPSEEK_LOCAL: bool    = os.getenv("USE_DEEPSEEK_LOCAL", "false").lower() == "true" and DEEPSEEK_ENABLED
-DEEPSEEK_LOCAL_MODEL: str   = os.getenv("DEEPSEEK_LOCAL_MODEL", "deepseek-chat")
+# deepseek-chat (deprecated 2026/07/24) → deepseek-v4-flash
+DEEPSEEK_LOCAL_MODEL: str   = os.getenv("DEEPSEEK_LOCAL_MODEL", "deepseek-v4-flash")
 
 # Per-agent local model overrides — each defaults to DEEPSEEK_LOCAL_MODEL.
 DEEPSEEK_LOCAL_MODEL_BACKEND:  str = os.getenv("DEEPSEEK_LOCAL_MODEL_BACKEND",  DEEPSEEK_LOCAL_MODEL)
@@ -98,6 +100,13 @@ DEEPSEEK_LOCAL_MODEL_FRONTEND: str = os.getenv("DEEPSEEK_LOCAL_MODEL_FRONTEND", 
 DEEPSEEK_LOCAL_MODEL_TESTER:   str = os.getenv("DEEPSEEK_LOCAL_MODEL_TESTER",   DEEPSEEK_LOCAL_MODEL)
 DEEPSEEK_LOCAL_MODEL_REVIEWER: str = os.getenv("DEEPSEEK_LOCAL_MODEL_REVIEWER", DEEPSEEK_LOCAL_MODEL)  # tech_writer
 DEEPSEEK_LOCAL_MODEL_DEVOPS:   str = os.getenv("DEEPSEEK_LOCAL_MODEL_DEVOPS",   DEEPSEEK_LOCAL_MODEL)
+
+# ── Deepseek Thinking Mode ────────────────────────────────────────────────────
+# deepseek-v4-flash ve deepseek-v4-pro her iki modu da destekler.
+# "enabled" yapılırsa model yanıttan önce chain-of-thought üretir (reasoning_content).
+# Thinking mode aktifken temperature/top_p/presence_penalty/frequency_penalty etki etmez.
+DEEPSEEK_THINKING_MODE: str      = os.getenv("DEEPSEEK_THINKING_MODE", "disabled").lower()
+DEEPSEEK_REASONING_EFFORT: str   = os.getenv("DEEPSEEK_REASONING_EFFORT", "high").lower()
 
 # ── Sprint loop configuration ────────────────────────────────────────────────
 # Maximum rework iterations per phase (Implementation & Test loops).
