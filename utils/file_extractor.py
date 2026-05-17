@@ -48,12 +48,23 @@ _BOLD_HEADER_RE = re.compile(
     re.DOTALL,
 )
 
+# Code block whose first line is a comment that contains the full project path:
+#   ```python
+#   # projects/<slug>/path/to/file.py   ← or  # File: projects/...
+#   <content>
+#   ```
+# Supports Python/Shell/TOML (#) and TypeScript/JavaScript (//) comments.
+_CODE_COMMENT_PATH_RE = re.compile(
+    r"```[^\n]*\n(?:#|//)[ \t]*(?:[Ff]ile:[ \t]*)?(projects/\S+)\n(.*?)\n```",
+    re.DOTALL,
+)
+
 
 def _iter_matches(content: str):
     """Yield (file_path, file_content) tuples from all supported formats."""
     seen_spans: list[tuple[int, int]] = []
 
-    for pattern in (_EXPLICIT_RE, _MD_HEADER_RE, _BOLD_HEADER_RE):
+    for pattern in (_EXPLICIT_RE, _MD_HEADER_RE, _BOLD_HEADER_RE, _CODE_COMMENT_PATH_RE):
         for m in pattern.finditer(content):
             # Skip if this span overlaps a previous match (avoid double-writing)
             start, end = m.span()
@@ -63,6 +74,46 @@ def _iter_matches(content: str):
             file_path = m.group(1).strip()
             file_content = m.group(2)
             yield file_path, file_content
+
+
+def extract_files_from_file(
+    md_path: str,
+    overwrite: bool = True,
+    dry_run: bool = False,
+) -> list[str]:
+    """
+    Extract embedded file blocks from a single .md file and write them to disk.
+
+    This is the mid-run variant — call it from the orchestrator immediately after
+    each implementation crew run so that reviewers and gates operate on real disk files.
+
+    Args:
+        md_path:   Path to the agent output .md file to scan.
+        overwrite: If True (default — recommended for mid-run use), overwrite files
+                   that already exist so each sprint revision replaces stale code.
+        dry_run:   If True, only report what would be written without writing.
+
+    Returns:
+        List of file paths that were (or would be) written.
+    """
+    extracted: list[str] = []
+    path = Path(md_path)
+    if not path.exists():
+        return extracted
+
+    content = path.read_text(encoding="utf-8")
+    for file_path, file_content in _iter_matches(content):
+        dest = Path(file_path)
+        if dest.exists() and not overwrite:
+            print(f"  [extractor] skip (exists): {file_path}")
+            continue
+        if not dry_run:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(file_content, encoding="utf-8")
+        action = "dry-run" if dry_run else "wrote"
+        print(f"  [extractor] {action}: {file_path}")
+        extracted.append(file_path)
+    return extracted
 
 
 def extract_files_from_output(

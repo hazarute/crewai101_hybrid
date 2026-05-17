@@ -12,8 +12,9 @@ Frontend test framework depends on PLATFORM (from ARCHITECTURE.md):
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
+from crewai_tools import FileReadTool, DirectoryReadTool
 from models.llm_factory import tester_llm
+from utils.tools import SafeFileWriterTool, make_directory_search_tool
 
 
 test_engineer = Agent(
@@ -52,7 +53,7 @@ test_engineer = Agent(
         "Read PROJECT_SLUG and PLATFORM from your context before writing any file."
     ),
     llm=tester_llm,
-    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
+    tools=[SafeFileWriterTool(), FileReadTool(), DirectoryReadTool(), make_directory_search_tool()],
     allow_delegation=False,
     verbose=True,
 )

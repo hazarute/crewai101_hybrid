@@ -11,8 +11,9 @@ Writes every file to disk using FileWriterTool.
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
+from crewai_tools import FileReadTool, DirectoryReadTool
 from models.llm_factory import devops_llm
+from utils.tools import SafeFileWriterTool, make_directory_search_tool
 
 
 devops_agent = Agent(
@@ -53,7 +54,7 @@ devops_agent = Agent(
         "Do NOT describe configs in your Final Answer — write them using the tool."
     ),
     llm=devops_llm,
-    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
+    tools=[SafeFileWriterTool(), FileReadTool(), DirectoryReadTool(), make_directory_search_tool()],
     allow_delegation=False,
     verbose=True,
 )

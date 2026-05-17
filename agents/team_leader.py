@@ -17,8 +17,9 @@ a new code-review or test cycle — no manual intervention required.
 """
 
 from crewai import Agent
-from crewai_tools import FileReadTool, DirectoryReadTool, DirectorySearchTool, WebsiteSearchTool
+from crewai_tools import FileReadTool, DirectoryReadTool, WebsiteSearchTool
 from models.llm_factory import leader_llm
+from utils.tools import make_directory_search_tool
 
 
 team_leader = Agent(
@@ -46,7 +47,7 @@ team_leader = Agent(
         "REJECTED means specific, numbered issues must be resolved before the next run."
     ),
     llm=leader_llm,
-    tools=[FileReadTool(), DirectoryReadTool(), DirectorySearchTool(), WebsiteSearchTool()],
+    tools=[FileReadTool(), DirectoryReadTool(), make_directory_search_tool(), WebsiteSearchTool()],
     allow_delegation=False,
     verbose=True,
 )

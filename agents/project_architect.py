@@ -13,8 +13,9 @@ Platform detection (from feature request keywords):
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
+from crewai_tools import FileReadTool, DirectoryReadTool
 from models.llm_factory import architect_llm
+from utils.tools import SafeFileWriterTool, make_directory_search_tool
 
 
 project_architect = Agent(
@@ -40,21 +41,30 @@ project_architect = Agent(
         "  - Keywords like 'website', 'dashboard', 'web portal', 'browser' → web\n"
         "  - Keywords like 'cross-platform', 'both web and mobile', 'universal' → universal\n"
         "  - No platform hint → default to web\n"
-        "For mobile/universal projects you write:\n"
-        "  app.json / expo.json (Expo config), eas.json (EAS Build profiles), "
-        "tamagui.config.ts (theme tokens), and mobile/src/ source tree.\n"
-        "Before a single line of business logic is written, you produce an ARCHITECTURE.md "
-        "that specifies the platform, every API endpoint, request/response schema, "
-        "data model, and the exact file paths the team will create.\n"
+        "Your SOLE responsibility is to DESIGN the project (not implement it) and write "
+        "EXACTLY these 5 scaffolding files — nothing more:\n"
+        "  1. projects/<slug>/ARCHITECTURE.md\n"
+        "  2. projects/<slug>/backend/pyproject.toml\n"
+        "  3. projects/<slug>/frontend/package.json  (or mobile/package.json)\n"
+        "  4. projects/<slug>/.gitignore\n"
+        "  5. projects/<slug>/.env.example\n"
+        "DO NOT write app/main.py, app/models.py, routes/, src/*.tsx, components/, or ANY "
+        "other implementation file. Implementation is exclusively done by the Backend "
+        "Developer and Frontend Developer agents in subsequent phases.\n"
+        "ARCHITECTURE.md must contain the full design contract: endpoints (as a Markdown "
+        "table), schema field names and types (as a Markdown table — NOT Python/TypeScript "
+        "code blocks), folder structure, and platform decision.\n"
         "You name the project with a concise lowercase kebab-case slug and always place "
         "the entire project under projects/<slug>/.\n"
-        "CRITICAL RULE — you MUST use FileWriterTool to write every file to disk. "
+        "CRITICAL RULE — embed all 5 scaffolding files using === FILE: === format "
+        "directly in your Final Answer. Do NOT call FileWriterTool or any other tool "
+        "to write files — just produce the content inline. "
         "Your Final Answer MUST start with exactly two lines:\n"
         "PROJECT_SLUG: <slug>\n"
         "PLATFORM: web | mobile | universal"
     ),
     llm=architect_llm,
-    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
+    tools=[SafeFileWriterTool(), FileReadTool(), DirectoryReadTool(), make_directory_search_tool()],
     allow_delegation=False,
     verbose=True,
 )

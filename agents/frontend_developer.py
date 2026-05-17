@@ -11,8 +11,9 @@ Writes every file to disk using FileWriterTool.
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
+from crewai_tools import FileReadTool, DirectoryReadTool
 from models.llm_factory import frontend_llm
+from utils.tools import SafeFileWriterTool, make_directory_search_tool
 
 
 frontend_developer = Agent(
@@ -62,10 +63,14 @@ frontend_developer = Agent(
         "package.json, tsconfig.json, and config file to disk under "
         "projects/<slug>/frontend/ (web) or projects/<slug>/mobile/ (mobile/universal). "
         "Read PROJECT_SLUG and PLATFORM from your context before writing any file. "
-        "Do NOT describe code in your Final Answer — write it using the tool."
+        "Do NOT describe code in your Final Answer — write it using the tool.\n"
+        "TOOL USAGE — FileWriterTool accepts EXACTLY ONE file per call. "
+        "Call it once per file with a plain dict: "
+        '{\"filename\": \"...\", \"directory\": \"...\", \"content\": \"...\"}. '
+        "NEVER pass a JSON array or list — that always fails with a validation error."
     ),
     llm=frontend_llm,
-    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
+    tools=[SafeFileWriterTool(), FileReadTool(), DirectoryReadTool(), make_directory_search_tool()],
     allow_delegation=False,
     verbose=True,
 )

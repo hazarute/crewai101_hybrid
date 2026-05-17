@@ -109,9 +109,22 @@ DEEPSEEK_THINKING_MODE: str      = os.getenv("DEEPSEEK_THINKING_MODE", "disabled
 DEEPSEEK_REASONING_EFFORT: str   = os.getenv("DEEPSEEK_REASONING_EFFORT", "high").lower()
 
 # ── Sprint loop configuration ────────────────────────────────────────────────
-# Maximum rework iterations per phase (Implementation & Test loops).
+# Maximum rework iterations per gate checkpoint (Backend, Frontend, Test loops).
 # Yüksek değer = daha iyi kalite ama daha fazla token/süre.
-MAX_SPRINTS: int = int(os.getenv("MAX_SPRINTS", "3"))
+#
+# Accepted values:
+#   "3"        (integer) — at most 3 attempts per gate; exit on APPROVED
+#   "continue" (string)  — unlimited retries; exit only on APPROVED
+#   "critical" (string)  — unlimited retries; exit when no Critical issues remain
+#   "major"    (string)  — unlimited retries; exit when no Critical or Major issues remain
+#   "minor"    (string)  — unlimited retries; exit only when the review is fully CLEAN
+_max_sprints_raw: str = os.getenv("MAX_SPRINTS", "3").strip().lower()
+_SPRINT_SEVERITY_MODES: frozenset[str] = frozenset({"critical", "major", "minor"})
+MAX_SPRINTS: int | str | None = (
+    None if _max_sprints_raw == "continue"
+    else _max_sprints_raw if _max_sprints_raw in _SPRINT_SEVERITY_MODES
+    else int(_max_sprints_raw)
+)
 
 # ── Runtime feature request (can be overridden via env) ──────────────────────
 # Priority: FEATURE_REQUEST_FILE (path to a .md / .txt file) >

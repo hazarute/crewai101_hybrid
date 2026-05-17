@@ -11,8 +11,9 @@ Content adapts based on PLATFORM (from ARCHITECTURE.md):
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
+from crewai_tools import FileReadTool, DirectoryReadTool
 from models.llm_factory import reviewer_llm
+from utils.tools import SafeFileWriterTool, make_directory_search_tool
 
 
 tech_writer = Agent(
@@ -56,7 +57,7 @@ tech_writer = Agent(
         "Your Final Answer is a concise summary of what was documented."
     ),
     llm=reviewer_llm,
-    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
+    tools=[SafeFileWriterTool(), FileReadTool(), DirectoryReadTool(), make_directory_search_tool()],
     allow_delegation=False,
     verbose=True,
 )

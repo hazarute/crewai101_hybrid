@@ -2,12 +2,12 @@
 # Python 3.10+
 
 # Core framework
-crewai>=0.36.0
-crewai-tools>=0.4.0
+crewai>=0.193.2
+crewai-tools>=0.47.1
 
 # LLM providers
-langchain-openai>=0.1.0        # Cloud: GPT-4o / Claude via OpenAI-compatible API
-langchain-community>=0.2.0     # Local: Ollama (Llama 3 / Mistral)
+langchain-openai>=0.2.14        # Cloud: GPT-4o / Claude via OpenAI-compatible API
+langchain-community>=0.3.31     # Local: Ollama (Llama 3 / Mistral)
 
 # Utilities
-python-dotenv>=1.0.0
+python-dotenv>=1.2.2

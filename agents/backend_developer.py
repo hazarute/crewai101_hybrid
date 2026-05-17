@@ -7,8 +7,9 @@ Writes every file to disk using FileWriterTool.
 """
 
 from crewai import Agent
-from crewai_tools import FileWriterTool, FileReadTool, DirectoryReadTool, DirectorySearchTool
+from crewai_tools import FileReadTool, DirectoryReadTool
 from models.llm_factory import backend_llm
+from utils.tools import SafeFileWriterTool, make_directory_search_tool
 
 
 backend_developer = Agent(
@@ -19,6 +20,7 @@ backend_developer = Agent(
         "to disk using FileWriterTool. Deliver a fully functional FastAPI application "
         "that satisfies the API contract defined by the Solutions Architect."
     ),
+    max_iter=18,
     backstory=(
         "You are a senior Python engineer with deep expertise in: "
         "FastAPI (routing, dependency injection, middleware, exception handlers), "
@@ -33,10 +35,14 @@ backend_developer = Agent(
         "CRITICAL RULE — you MUST use FileWriterTool to write every Python file, "
         "config file, and requirements file to disk under projects/<slug>/backend/. "
         "Read the PROJECT_SLUG from your context before writing any file. "
-        "Do NOT describe code in your Final Answer — write it using the tool."
+        "Do NOT describe code in your Final Answer — write it using the tool.\n"
+        "TOOL USAGE — FileWriterTool accepts EXACTLY ONE file per call. "
+        "Call it once per file with a plain dict: "
+        '{\"filename\": \"...\", \"directory\": \"...\", \"content\": \"...\"}. '
+        "NEVER pass a JSON array or list — that always fails with a validation error."
     ),
     llm=backend_llm,
-    tools=[FileWriterTool(), FileReadTool(), DirectoryReadTool(), DirectorySearchTool()],
+    tools=[SafeFileWriterTool(), FileReadTool(), DirectoryReadTool(), make_directory_search_tool()],
     allow_delegation=False,
     verbose=True,
 )
